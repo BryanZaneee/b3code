@@ -1,9 +1,3 @@
-# First-class sibling repositories we maintain.
-#
-# Distilled is part of the TypeScript workspace and is initialized by
-# `git submodule update --init`. Floci is a large Java tree used only to
-# build the local AWS emulator, so it is skipped unless requested:
-# `git submodule update --init --checkout -- submodules/floci`.
 [submodule "distilled"]
 	path = .repos/alchemy-effect/submodules/distilled
 	url = https://github.com/alchemy-run/distilled.git

@@ -2887,7 +2887,7 @@ export const createBuildConfig = Effect.fn("createBuildConfig")(function* (
       category: "Development",
       synopsis: "Desktop GUI for coding agents",
       // Required by the .deb control file.
-      maintainer: "T3 Tools <hello@t3.codes>",
+      maintainer: "BryanZaneee",
       // electron-builder turns these into MimeType=x-scheme-handler/<scheme>;
       // in the .desktop entry (Exec already gets %U), so browsers can hand
       // t3code:// OAuth callbacks to the app.
@@ -3864,7 +3864,7 @@ const buildDesktopArtifact = Effect.fn("buildDesktopArtifact")(function* (
     license: "MIT",
     // Required by the .deb control file.
     homepage: "https://t3.codes",
-    author: "T3 Tools",
+    author: "BryanZaneee (personal fork)",
     main: "apps/desktop/dist-electron/boot.cjs",
     build: yield* createBuildConfig(
       options.platform,
