@@ -153,10 +153,10 @@ export function museServeArgs(
   return args;
 }
 
-/** What T3 sends in MSP `initialize`; only full hosts ask for session MCP servers. */
+/** What BZ-Code sends in MSP `initialize`; only full hosts ask for session MCP servers. */
 export function museInitializeParams(readOnly = false) {
   return {
-    clientInfo: { name: "t3_code", title: "T3 Code", version: "1" },
+    clientInfo: { name: "t3_code", title: "BZ-Code", version: "1" },
     capabilities: { requestedCapabilities: readOnly ? [] : ["sessionMcp"] },
   };
 }

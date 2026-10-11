@@ -113,7 +113,7 @@ function antigravityModelOptions(
 /**
  * Resolves the model a turn should run on. A saved selection is reapplied
  * as-is. The provider default alias resolves to `defaultModel` when the
- * account offers it, so T3 can pick a newer model than the one Google marks
+ * account offers it, so BZ-Code can pick a newer model than the one Google marks
  * current. Otherwise the agent's current selection stands.
  */
 function resolveAntigravityModel(input: {

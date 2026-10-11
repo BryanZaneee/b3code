@@ -1,0 +1,7 @@
+{
+  "name": "BZ-Code",
+  "shortName": "BZ",
+  "appId": "com.bzcode.app",
+  "repository": "BryanZaneee/b3code",
+  "homeDirectory": ".bzcode"
+}

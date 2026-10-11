@@ -1,0 +1,130 @@
+name: BZ-Code upstream sync
+on:
+  schedule:
+    - cron: "17 10 * * 1,4"
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+concurrency:
+  group: bz-upstream-sync
+  cancel-in-progress: false
+jobs:
+  sync:
+    if: github.repository == 'BryanZaneee/b3code'
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Merge upstream without replacing BZ customizations
+        id: merge
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git remote add upstream https://github.com/pingdotgg/t3code.git
+          git fetch upstream main
+          if git merge-base --is-ancestor upstream/main origin/main; then
+            echo 'changed=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo 'changed=true' >> "$GITHUB_OUTPUT"
+          if git ls-remote --exit-code --heads origin bz/upstream-sync >/dev/null; then
+            git fetch origin bz/upstream-sync
+            git switch -c bz/upstream-sync origin/bz/upstream-sync
+          else
+            git switch -c bz/upstream-sync origin/main
+          fi
+          conflict=false
+          if ! git merge --no-edit origin/main || ! git merge --no-edit upstream/main; then
+            git diff --name-only --diff-filter=U > "$RUNNER_TEMP/bz-sync-conflicts.txt"
+            git merge --abort
+            conflict=true
+          fi
+          echo "conflict=$conflict" >> "$GITHUB_OUTPUT"
+          if [[ "$conflict" == true ]]; then
+            {
+              echo 'Upstream sync needs manual conflict resolution.'
+              echo
+              echo "Upstream commit: $(git rev-parse upstream/main)"
+              echo
+              echo 'Conflicting files:'
+              cat "$RUNNER_TEMP/bz-sync-conflicts.txt"
+              echo
+              echo 'Fetch upstream/main and merge it into bz/upstream-sync locally. Preserve bz-branding.json, BZ icons, state isolation, and fork-only releases. See B3_MAINTENANCE.md.'
+            } > "$RUNNER_TEMP/bz-sync-report.md"
+            issue=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search 'BZ-Code upstream sync blocked in:title' --json number --jq '.[0].number // empty')
+            if [[ -n "$issue" ]]; then
+              gh issue edit "$issue" --repo "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/bz-sync-report.md"
+            else
+              gh issue create --repo "$GITHUB_REPOSITORY" --title 'BZ-Code upstream sync blocked' --body-file "$RUNNER_TEMP/bz-sync-report.md"
+            fi
+            cp "$RUNNER_TEMP/bz-sync-report.md" BZ_UPSTREAM_CONFLICTS.md
+            git add BZ_UPSTREAM_CONFLICTS.md
+            if ! git diff --cached --quiet; then git commit -m 'docs: report unresolved upstream merge'; fi
+            git push origin HEAD:bz/upstream-sync
+            pr=$(gh pr list --repo "$GITHUB_REPOSITORY" --head bz/upstream-sync --base main --state open --json number --jq '.[0].number // empty')
+            if [[ -n "$pr" ]]; then
+              gh pr edit "$pr" --repo "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/bz-sync-report.md"
+              gh pr ready "$pr" --repo "$GITHUB_REPOSITORY" --undo || true
+            else
+              gh pr create --repo "$GITHUB_REPOSITORY" --base main --head bz/upstream-sync --title 'Resolve upstream conflicts for BZ-Code' --draft --body-file "$RUNNER_TEMP/bz-sync-report.md"
+            fi
+            exit 0
+          fi
+          if [[ -f BZ_UPSTREAM_CONFLICTS.md ]]; then
+            git rm BZ_UPSTREAM_CONFLICTS.md
+            git commit -m 'docs: clear resolved upstream conflict report'
+          fi
+          git push origin HEAD:bz/upstream-sync
+      - uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb
+        if: steps.merge.outputs.changed == 'true' && steps.merge.outputs.conflict != 'true'
+        with:
+          node-version-file: package.json
+          cache: true
+      - name: Validate merged sources
+        id: validation
+        if: steps.merge.outputs.changed == 'true' && steps.merge.outputs.conflict != 'true'
+        continue-on-error: true
+        run: |
+          vp i --frozen-lockfile
+          vp run icons:check
+          node --test scripts/bz-release-version.test.mjs scripts/bz-verify-release.test.mjs
+          vp test run apps/desktop/src/updates/DesktopUpdates.test.ts apps/desktop/src/updates/updateMachine.test.ts apps/server/src/desktopUpdate/DesktopAppUpdate.test.ts apps/server/src/cloud/selfUpdate.test.ts apps/desktop/src/app/DesktopEnvironment.test.ts apps/desktop/src/app/DesktopAppIdentity.test.ts scripts/build-desktop-artifact.test.ts
+          vp run --filter @t3tools/desktop --filter @t3tools/web --filter @t3tools/scripts --filter t3 typecheck
+          vp run build:desktop
+          # An upstream merge must not restore unrelated publishing/deployment workflows.
+          test "$(find .github/workflows -name '*.yml' | wc -l | tr -d ' ')" = 3
+      - name: Create or update the review request
+        if: steps.merge.outputs.changed == 'true' && steps.merge.outputs.conflict != 'true'
+        env:
+          VALIDATION: ${{ steps.validation.outcome }}
+        run: |
+          {
+            echo 'Integrates pingdotgg/t3code:main while retaining BZ-Code customizations.'
+            echo
+            echo "Validation: $VALIDATION. [Run details](https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)."
+            echo
+            echo 'Review manually. Do not merge when checks fail. Merging this PR approves a BZ-Code release build; unsigned builds publish only as prereleases.'
+          } > "$RUNNER_TEMP/bz-sync-pr.md"
+          pr=$(gh pr list --repo "$GITHUB_REPOSITORY" --head bz/upstream-sync --base main --state open --json number --jq '.[0].number // empty')
+          if [[ -n "$pr" ]]; then
+            gh pr edit "$pr" --repo "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/bz-sync-pr.md"
+            if [[ "$VALIDATION" != success ]]; then gh pr ready "$pr" --repo "$GITHUB_REPOSITORY" --undo || true; fi
+          else
+            args=(--repo "$GITHUB_REPOSITORY" --base main --head bz/upstream-sync --title 'Merge upstream improvements into BZ-Code' --body-file "$RUNNER_TEMP/bz-sync-pr.md")
+            if [[ "$VALIDATION" != success ]]; then args+=(--draft); fi
+            gh pr create "${args[@]}"
+          fi
+          if [[ "$VALIDATION" != success ]]; then exit 1; fi
+      - name: Report unresolved merge
+        if: steps.merge.outputs.conflict == 'true'
+        run: |
+          echo '::error::Upstream changes conflict with the fork. See the upstream-sync blocked issue; no release was published.'
+          exit 1

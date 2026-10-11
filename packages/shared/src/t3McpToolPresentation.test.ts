@@ -3,7 +3,7 @@ import { describe, expect, it } from "vite-plus/test";
 import { T3_MCP_TOOL_NAMES, resolveT3McpToolPresentation } from "./t3McpToolPresentation.ts";
 
 describe("resolveT3McpToolPresentation", () => {
-  it("recognizes every T3 tool across provider prefixes and completion suffixes", () => {
+  it("recognizes every BZ-Code tool across provider prefixes and completion suffixes", () => {
     for (const tool of T3_MCP_TOOL_NAMES) {
       const presentation = resolveT3McpToolPresentation(tool);
       for (const prefix of [
@@ -14,7 +14,8 @@ describe("resolveT3McpToolPresentation", () => {
         "t3_code/",
         "t3code:",
         "mcp_t3-code_",
-        "T3 Code ",
+        "BZ-Code ",
+        "BZ-Code ",
         "t3-code · ",
       ]) {
         expect(resolveT3McpToolPresentation(`${prefix}${tool} completed`), tool).toEqual(
@@ -24,35 +25,35 @@ describe("resolveT3McpToolPresentation", () => {
       expect(resolveT3McpToolPresentation(`mcp__another-server__${tool}`), tool).toBeNull();
     }
   });
-  it("pretty prints Claude and Cursor T3 MCP tool names", () => {
+  it("pretty prints Claude and Cursor BZ-Code MCP tool names", () => {
     expect(resolveT3McpToolPresentation("mcp__t3-code__t3_thread_read")).toEqual({
-      displayName: "Read a T3 thread",
+      displayName: "Read a BZ-Code thread",
       logo: "t3-code",
     });
   });
 
-  it("pretty prints Codex T3 MCP tool names", () => {
+  it("pretty prints Codex BZ-Code MCP tool names", () => {
     expect(resolveT3McpToolPresentation("t3-code.create_threads")).toEqual({
-      displayName: "Create T3 threads",
+      displayName: "Create BZ-Code threads",
       logo: "t3-code",
     });
   });
 
   it("pretty prints thread metadata updates", () => {
     expect(resolveT3McpToolPresentation("mcp__t3-code__t3_thread_update")).toEqual({
-      displayName: "Update T3 thread metadata",
+      displayName: "Update BZ-Code thread metadata",
       logo: "t3-code",
     });
   });
 
-  it("pretty prints bare T3 MCP toolkit names", () => {
+  it("pretty prints bare BZ-Code MCP toolkit names", () => {
     expect(resolveT3McpToolPresentation("list_scheduled_tasks")).toEqual({
       displayName: "List scheduled tasks",
       logo: "t3-code",
     });
   });
 
-  it("pretty prints worktree T3 MCP tool names", () => {
+  it("pretty prints worktree BZ-Code MCP tool names", () => {
     expect(resolveT3McpToolPresentation("mcp__t3-code__t3_worktree_handoff")).toEqual({
       displayName: "Hand off thread to a git worktree",
       logo: "t3-code",
@@ -63,7 +64,7 @@ describe("resolveT3McpToolPresentation", () => {
     });
   });
 
-  it("pretty prints preview T3 MCP tool names", () => {
+  it("pretty prints preview BZ-Code MCP tool names", () => {
     expect(resolveT3McpToolPresentation("T3-code.preview_open")).toEqual({
       displayName: "Open a page in the preview browser",
       logo: "t3-code",
@@ -80,7 +81,7 @@ describe("resolveT3McpToolPresentation", () => {
       "t3_code:delegate_task",
       "t3code/delegate_task",
       "t3-code delegate_task",
-      "T3 Code delegate_task",
+      "BZ-Code delegate_task",
       "t3-code__delegate_task",
     ]) {
       expect(resolveT3McpToolPresentation(name)?.displayName).toBe("Delegate a child task");

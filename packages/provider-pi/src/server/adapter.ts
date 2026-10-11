@@ -7,7 +7,7 @@
  * AGENTS.md / SYSTEM.md context, settings.json, custom models, and auth all
  * load exactly as they do in the `pi` TUI. Sessions are stored by Pi itself
  * (default `~/.pi/agent/sessions/`), and the session file path is the durable
- * `nativeThreadRef`, so a thread started in T3 can be resumed from the TUI
+ * `nativeThreadRef`, so a thread started in BZ-Code can be resumed from the TUI
  * and vice versa.
  *
  * Turn lifecycle: `agent_settled` is the only terminal signal. `agent_end`
@@ -21,7 +21,7 @@
  * `select`/`input`/`editor` → user_input_request); answers travel back as
  * `extension_ui_response`. `notify` becomes a completed activity item.
  * Terminal-only decoration such as status, widget, title, and editor-text
- * updates has no matching T3 surface and is ignored.
+ * updates has no matching BZ-Code surface and is ignored.
  */
 import * as HostProcess from "@t3tools/shared/HostProcess";
 import { AgentScope } from "@t3tools/shared/AgentScope";
@@ -114,7 +114,7 @@ const PI_REQUEST_TIMEOUT_MS = 15_000;
 // Session lifecycle hooks reload extensions, MCP servers and language servers.
 const PI_SESSION_TIMEOUT_MS = 60_000;
 const PI_UNSOLICITED_ACTIVITY_ERROR =
-  "Pi started agent work outside an active T3 turn. The session was stopped to prevent invisible tool execution.";
+  "Pi started agent work outside an active BZ-Code turn. The session was stopped to prevent invisible tool execution.";
 const SETTLE_PROBE_MAX_ATTEMPTS = 3;
 const SETTLE_PROBE_RETRY_DELAY = Duration.millis(100);
 
@@ -164,7 +164,7 @@ const PiProviderCapabilitiesV2 = {
     supportsDynamicToolCallbacks: false,
   },
   approvals: {
-    // Pi exposes a blocking tool_call extension hook. The T3 bridge uses it
+    // Pi exposes a blocking tool_call extension hook. The BZ-Code bridge uses it
     // for supervised and auto-accept modes and forwards its confirmations
     // through the same extension UI protocol as user-installed extensions.
     supportsCommandApproval: true,
@@ -183,7 +183,7 @@ const PiProviderCapabilitiesV2 = {
     planDeltasHaveItemIds: false,
   },
   subagents: {
-    // T3 delegation uses the shared MCP `delegate_task` path. Installed Pi
+    // BZ-Code delegation uses the shared MCP `delegate_task` path. Installed Pi
     // subagent extensions are observed best-effort, but their official tool
     // runs children with --no-session and exposes no resumable child id.
     supportsSubagents: true,
@@ -199,7 +199,7 @@ const PiProviderCapabilitiesV2 = {
     acceptsSyntheticUserContext: true,
     canGenerateSummaries: false,
     canConsumeHandoffSummaries: true,
-    // T3 delivers both full and delta handoffs through Pi's normal user-message
+    // BZ-Code delivers both full and delta handoffs through Pi's normal user-message
     // input, so neither strategy depends on a Pi-specific context hook.
     supportsDeltaHandoff: true,
     supportsFullThreadHandoff: true,
@@ -465,7 +465,7 @@ interface PendingPiPrompt {
 }
 
 /**
- * The T3 bridge confirms tool calls as `Allow <tool>?`. Edits surface as
+ * The BZ-Code bridge confirms tool calls as `Allow <tool>?`. Edits surface as
  * file-change approvals so clients render them like other providers' edits;
  * every other confirmation, including ones from user extensions, is a command.
  */
@@ -1176,7 +1176,7 @@ export const makePiAdapterV2 = Effect.fn("makePiAdapterV2")(function* (
       /**
        * Observe the result shape from Pi's official example subagent extension.
        * The extension runs children with --no-session, so these entries are
-       * visible in T3's shared subagent UI without inventing a child thread.
+       * visible in BZ-Code's shared subagent UI without inventing a child thread.
        * Unknown or changed result shapes stay ordinary dynamic tool output.
        */
       const emitSubagentTasks = Effect.fnUntraced(function* (
@@ -1354,7 +1354,7 @@ export const makePiAdapterV2 = Effect.fn("makePiAdapterV2")(function* (
           method !== "input" &&
           method !== "editor"
         ) {
-          // Terminal decoration has no matching T3 surface.
+          // Terminal decoration has no matching BZ-Code surface.
           yield* Effect.logDebug("Ignoring pi extension UI update.", { method });
           return;
         }
@@ -1548,7 +1548,7 @@ export const makePiAdapterV2 = Effect.fn("makePiAdapterV2")(function* (
        * `get_entries` is append-ordered and keeps abandoned branches, so both
        * come from walking the leaf's `parentId` chain, never from list order.
        * A leaf that no longer descends from the previous one means something
-       * outside T3 rewound the session, such as an extension calling
+       * outside BZ-Code rewound the session, such as an extension calling
        * `navigateTree`. The user entries left on the active branch are then
        * returned so orchestration can roll back runs that fell off it.
        * Pure bookkeeping: failures degrade to the synthetic refs.
@@ -2612,7 +2612,7 @@ export const makePiAdapterV2 = Effect.fn("makePiAdapterV2")(function* (
             // Resolved before the turn is installed: a failure here (an
             // unreadable attachment) must not leave `activeTurn` set, which
             // would reject every later turn as already active.
-            // Orchestration instructions reach pi through the T3 MCP
+            // Orchestration instructions reach pi through the BZ-Code MCP
             // extension's before_agent_start system-prompt hook, never by
             // wrapping the user text: a wrapped first message would no
             // longer start with "/" and slash commands would stop expanding.
