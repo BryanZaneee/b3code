@@ -91,7 +91,9 @@ After upstream merges, inspect `.github/workflows`: only `ci.yml`, `release.yml`
 ## Signing and notarization
 
 No valid signing identity was found on the development Mac during initial setup. Reliable
-macOS automatic installation needs a Developer ID signed application. See the official
+macOS automatic installation needs a Developer ID signed application. Install the first signed
+DMG manually and use it as version A for the test below; an unsigned development installation
+is not a validated starting point for automatic installation. See the official
 [Electron requirements](https://www.electronjs.org/docs/latest/api/auto-updater) and
 [electron-builder update documentation](https://www.electron.build/v26/docs/features/auto-update/).
 A DMG alone cannot support the macOS updater; the ZIP and metadata must be published as well.
@@ -236,6 +238,9 @@ Required upstream MIT copyright and third-party notices are retained; they are a
 - BZ-Code 1.0.0 launched from `/Applications/BZ-Code.app`, independently of the checkout. The
   bundled server connected, Codex completed a disposable conversation, terminal output and clean
   Git status were verified, and the conversation survived a clean quit/relaunch.
+- Version 1.0.0 was manually replaced using the verified 1.0.1 DMG. The saved conversation,
+  settings, project, and Codex connection persisted; a second Codex turn completed successfully.
+  This validates manual replacement and data persistence, not automatic installation.
 - The installed CLI refused `t3 update --yes` before any official release download.
 - Desktop, web, server, and scripts typechecks passed. Changed test files were exercised; stale
   branding/handshake fixtures were corrected. macOS temporary-path fixtures use canonical paths.
@@ -245,3 +250,14 @@ Required upstream MIT copyright and third-party notices are retained; they are a
 - Live provider validation covers Codex. Other integrations remain implemented and have focused
   regression coverage; live authentication and execution were not tested for every provider.
 - No automatic-update success is claimed before the signed installed A→B test.
+
+The initial Actions checkout exposed two inherited vendored gitlinks without root submodule URLs.
+Root `.gitmodules` now supplies those URLs; CI does not initialize the vendored submodules.
+
+## Current scope and disk cleanup
+
+At the user's request, work now focuses on the installed BZ-Code application. Extra Actions runs
+were cancelled; release publication and signed automatic installation are not claimed as verified.
+Docker was not used. Temporary clones, duplicate installers, and retained packaging stages were
+removed. Development dependencies and runtime caches can be restored with `vp i` before rebuilding.
+The fork source, installed app, settings, projects, and conversations are retained.
