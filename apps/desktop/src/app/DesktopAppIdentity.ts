@@ -99,6 +99,7 @@ export const make = Effect.gen(function* () {
     );
     yield* electronApp.setAboutPanelOptions({
       applicationName: environment.displayName,
+      copyright: "Personal edition · MIT licensed. See Settings for third-party notices.",
       applicationVersion: environment.appVersion,
       version: Option.getOrElse(commitHash, () => "unknown"),
     });
