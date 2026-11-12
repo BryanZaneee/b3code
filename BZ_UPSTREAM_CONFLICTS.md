@@ -1,6 +1,6 @@
 Upstream sync needs manual conflict resolution.
 
-Upstream commit: 960d5761c13f68a2f10635bcd26489a5fa404ec1
+Upstream commit: fc2b5de20cb572d2333e03284466e3c804d25c84
 
 Conflicting files:
 .github/workflows/ci.yml
@@ -11,6 +11,8 @@ Conflicting files:
 .github/workflows/mobile-eas-production.yml
 .github/workflows/mobile-fingerprint-check.yml
 .github/workflows/mobile-showcase-screenshots.yml
+.github/workflows/pr-size.yml
+.github/workflows/pr-vouch.yml
 .github/workflows/publish-aur.yml
 .github/workflows/release-desktop.yml
 .github/workflows/release.yml
@@ -23,6 +25,7 @@ apps/desktop/src/app/DesktopAppIdentity.test.ts
 apps/desktop/src/app/DesktopAssets.test.ts
 apps/desktop/src/app/DesktopClerk.test.ts
 apps/desktop/src/app/DesktopClerk.ts
+apps/desktop/src/app/DesktopCliCommand.test.ts
 apps/desktop/src/app/DesktopCliShim.test.ts
 apps/desktop/src/app/DesktopCliShim.ts
 apps/desktop/src/app/DesktopEnvironment.test.ts
@@ -52,10 +55,12 @@ apps/desktop/src/ssh/DesktopSshEnvironment.test.ts
 apps/desktop/src/window/DesktopApplicationMenu.test.ts
 apps/desktop/src/window/DesktopWindow.test.ts
 apps/desktop/src/wsl/DesktopWslEnvironment.test.ts
+apps/server/src/auth/EnvironmentAuth.test.ts
 apps/server/src/auth/EnvironmentAuth.ts
 apps/server/src/auth/McpOAuth.test.ts
 apps/server/src/auth/McpOAuth.ts
 apps/server/src/auth/http.test.ts
+apps/server/src/binCli.ts
 apps/server/src/cli/acpMcpBridge.ts
 apps/server/src/cli/app.test.ts
 apps/server/src/cli/browser.ts
@@ -64,6 +69,7 @@ apps/server/src/cli/config.ts
 apps/server/src/cli/connect.ts
 apps/server/src/cli/pair.test.ts
 apps/server/src/cli/pair.ts
+apps/server/src/cli/server.ts
 apps/server/src/cli/service.test.ts
 apps/server/src/cli/service.ts
 apps/server/src/cli/uninstall.ts
@@ -119,6 +125,7 @@ apps/server/src/orchestration-v2/OpenCode2OrchestratorV2.integration.test.ts
 apps/server/src/orchestration-v2/OpenCode2OrchestratorV2.live.test.ts
 apps/server/src/orchestration-v2/ProviderEventIngestor.ts
 apps/server/src/orchestration-v2/ProviderSessionManager.ts
+apps/server/src/orchestration-v2/PullRequestWatchReactor.ts
 apps/server/src/orchestration-v2/RestartBackgroundNote.ts
 apps/server/src/orchestration-v2/RestartContinuation.test.ts
 apps/server/src/orchestration-v2/RestartContinuation.ts
@@ -179,6 +186,7 @@ apps/server/src/provider/ProviderRegistry.test.ts
 apps/server/src/provider/acp/AcpSessionRuntime.processTree.test.ts
 apps/server/src/provider/acp/AntigravityAcpSupport.ts
 apps/server/src/provider/antigravityAuthSupport.ts
+apps/server/src/provider/providerMaintenanceRunner.ts
 apps/server/src/relay/HeldHooksWaker.ts
 apps/server/src/scheduledTasks/RelayDeliveryProof.ts
 apps/server/src/scheduledTasks/ScheduledTaskService.ts
@@ -188,7 +196,6 @@ apps/server/src/scheduledTasks/webhookRoute.ts
 apps/server/src/server.ts
 apps/server/src/serverRuntimeStartup.ts
 apps/server/src/terminal/NodePtyAdapter.ts
-apps/server/src/textGeneration/AntigravityTextGeneration.test.ts
 apps/server/src/triage/triagePrompt.ts
 apps/server/src/usage/UsageService.ts
 apps/server/src/worktreesDirectory.ts
@@ -196,6 +203,7 @@ apps/server/src/ws.ts
 apps/web/index.html
 apps/web/src/bootstrap.test.ts
 apps/web/src/branding.test.ts
+apps/web/src/branding.ts
 apps/web/src/cloud/connectOnboarding.ts
 apps/web/src/cloud/linkEnvironment.ts
 apps/web/src/cloud/primaryCloudLinkState.ts
@@ -204,8 +212,10 @@ apps/web/src/components/ChatMarkdown.test.tsx
 apps/web/src/components/ChatView.tsx
 apps/web/src/components/CommandPalette.logic.test.ts
 apps/web/src/components/NightlyMobileBeta.tsx
+apps/web/src/components/ServerUpdateAction.tsx
 apps/web/src/components/Sidebar.logic.test.ts
 apps/web/src/components/Sidebar.tsx
+apps/web/src/components/chat/McpAppFrame.tsx
 apps/web/src/components/chat/MessagesTimeline.logic.test.ts
 apps/web/src/components/chat/MessagesTimeline.test.tsx
 apps/web/src/components/chat/MessagesTimeline.tsx
@@ -219,10 +229,12 @@ apps/web/src/components/clerk/clerkAppearance.ts
 apps/web/src/components/cloud/CloudEnvironmentConnectList.test.tsx
 apps/web/src/components/cloud/CloudEnvironmentConnectList.tsx
 apps/web/src/components/cloud/ConnectOnboardingDialog.tsx
+apps/web/src/components/desktop/DesktopAppActivationCoordinator.tsx
 apps/web/src/components/desktop/DesktopWebLinkCoordinator.tsx
 apps/web/src/components/desktop/SshPasswordPromptDialog.tsx
 apps/web/src/components/desktopUpdate.logic.test.ts
 apps/web/src/components/desktopUpdate.logic.ts
+apps/web/src/components/onboarding/WelcomeWizard.tsx
 apps/web/src/components/pullRequest/PullRequestListFilters.test.tsx
 apps/web/src/components/settings/BrowserImportWizard.tsx
 apps/web/src/components/settings/CaptureShortcutConfig.tsx
@@ -256,6 +268,8 @@ apps/web/src/routes/_chat.tsx
 apps/web/src/themePalette.test.ts
 apps/web/src/themePalette.ts
 apps/web/src/versionSkew.ts
+assets/README.md
+native/hyprland-snap-shot/src/ipc.rs
 packages/client-runtime/src/authorization/layer.test.ts
 packages/client-runtime/src/authorization/remote.test.ts
 packages/client-runtime/src/authorization/service.ts
@@ -280,6 +294,7 @@ packages/client-runtime/src/state/environmentHttpAuth.ts
 packages/client-runtime/src/state/projectGrouping.test.ts
 packages/client-runtime/src/state/pullRequestDiffHttp.test.ts
 packages/client-runtime/src/state/threadExecution.test.ts
+packages/client-runtime/src/userMessage.test.ts
 packages/client-runtime/src/webhookAddress.test.ts
 packages/client-runtime/src/webhookAddress.ts
 packages/client-runtime/src/work-log/presentation.test.ts
@@ -321,9 +336,13 @@ packages/provider-core/src/server/orchestrationInstructions.ts
 packages/provider-core/src/server/runtimeInstructions.ts
 packages/provider-core/src/server/textGenerationPrompts.test.ts
 packages/provider-core/src/server/textGenerationPrompts.ts
+packages/provider-cursor/src/server/accountUsage.test.ts
+packages/provider-cursor/src/server/accountUsage.ts
 packages/provider-cursor/src/server/adapter.ts
+packages/provider-cursor/src/server/driver.test.ts
 packages/provider-cursor/src/server/status.ts
 packages/provider-cursor/src/server/textGeneration.ts
+packages/provider-cursor/src/server/usageLimits.ts
 packages/provider-grok/src/server/acpSupport.test.ts
 packages/provider-grok/src/server/acpSupport.ts
 packages/provider-grok/src/server/adapter.ts
